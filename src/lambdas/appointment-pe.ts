@@ -1,39 +1,12 @@
-import { SQSEvent } from 'aws-lambda';
-import { saveToRDS } from '../utils/rds';
-import { publishCompletedEvent } from '../utils/eventbridge';
-import { parseSNSMessage, EventPayload } from '../events/types';
-import { withBatchEventHandler } from '../utils/lambda-wrapper';
+/**
+ * Legacy handler - redirects to new SOLID architecture
+ * Maintained for backward compatibility with existing infrastructure
+ *
+ * New implementation can be found in:
+ * - handlers/appointment-pe-processor.ts (handler)
+ * - services/AppointmentProcessor.ts (business logic)
+ * - repositories/RDSRepository.ts (data access)
+ * - repositories/EventRepository.ts (event publishing)
+ */
 
-export const handler = async (event: SQSEvent): Promise<void> => {
-  const processRecord = withBatchEventHandler(async (record, logger) => {
-    const appointment: EventPayload<'appointment.created'> = parseSNSMessage(record.body);
-
-    logger.info('[PE] Processing appointment', {
-      appointmentId: appointment.appointmentId,
-      insuredId: appointment.insuredId,
-      countryISO: appointment.countryISO,
-    });
-
-    await saveToRDS(appointment, 'PE');
-
-    logger.info('[PE] Appointment saved to RDS', {
-      appointmentId: appointment.appointmentId,
-    });
-
-    await publishCompletedEvent({
-      appointmentId: appointment.appointmentId,
-      insuredId: appointment.insuredId,
-      scheduleId: appointment.scheduleId,
-      countryISO: appointment.countryISO,
-      timestamp: new Date().toISOString(),
-    });
-
-    logger.info('[PE] Completion event published', {
-      appointmentId: appointment.appointmentId,
-    });
-
-    return { success: true };
-  }, { eventSource: 'PE_PROCESSOR' });
-
-  await processRecord(event.Records);
-};
+export { handler } from '../handlers/appointment-pe-processor';
