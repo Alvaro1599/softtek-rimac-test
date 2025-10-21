@@ -1,5 +1,6 @@
 import { AppointmentService } from './AppointmentService';
 import { AppointmentProcessor } from './AppointmentProcessor';
+import { ScheduleService } from './ScheduleService';
 import { AppointmentRepository } from '../repositories/AppointmentRepository';
 import { EventRepository } from '../repositories/EventRepository';
 import { RDSRepository } from '../repositories/RDSRepository';
@@ -36,4 +37,8 @@ export function createPEAppointmentProcessor(logger: Logger): AppointmentProcess
 
 export function createCLAppointmentProcessor(logger: Logger): AppointmentProcessor {
   return createAppointmentProcessor('CL', logger);
+}
+
+export function createScheduleService(logger: Logger): ScheduleService {
+  return new ScheduleService(logger);
 }
