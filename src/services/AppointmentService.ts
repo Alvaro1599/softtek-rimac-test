@@ -66,4 +66,19 @@ export class AppointmentService {
     };
   }
 
+  async getAppointmentById(appointmentId: string | undefined) {
+    if (!appointmentId) {
+      throw new MissingRequiredFieldError(['appointmentId']);
+    }
+
+    this.logger.info('Fetching appointment by id', { appointmentId });
+
+    const appointment =
+        await this.appointmentRepo.findByIdOrFail(appointmentId);
+
+    this.logger.info('Appointment retrieved', { appointmentId });
+
+    return appointment.toDTO();
+  }
+
 }

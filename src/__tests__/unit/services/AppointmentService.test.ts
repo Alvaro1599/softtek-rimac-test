@@ -269,4 +269,96 @@ describe('AppointmentService', () => {
       expect(result.appointments[0]).toEqual(appointment.toDTO());
     });
   });
+
+  describe('getAppointmentById', () => {
+    it('should retrieve appointment by id', async () => {
+      const appointment = Appointment.create({
+        insuredId: '12345',
+        scheduleId: 100,
+        countryISO: 'PE',
+      });
+
+      mockAppointmentRepo.findByIdOrFail.mockResolvedValueOnce(appointment);
+
+      const result = await service.getAppointmentById(appointment.id);
+
+      expect(result).toHaveProperty('appointmentId', appointment.id);
+      expect(result).toHaveProperty('insuredId', '12345');
+      expect(result).toHaveProperty('scheduleId', 100);
+      expect(result).toHaveProperty('countryISO', 'PE');
+      expect(result).toHaveProperty('status', 'pending');
+    });
+
+    it('should throw MissingRequiredFieldError when appointmentId is undefined', async () => {
+      await expect(service.getAppointmentById(undefined)).rejects.toThrow(
+        MissingRequiredFieldError
+      );
+    });
+
+    it('should throw MissingRequiredFieldError when appointmentId is empty string', async () => {
+      await expect(service.getAppointmentById('')).rejects.toThrow(
+        MissingRequiredFieldError
+      );
+    });
+
+    it('should log fetch operation', async () => {
+      const appointment = Appointment.create({
+        insuredId: '12345',
+        scheduleId: 100,
+        countryISO: 'PE',
+      });
+
+      mockAppointmentRepo.findByIdOrFail.mockResolvedValueOnce(appointment);
+
+      await service.getAppointmentById('test-id');
+
+      expect(mockLogger.info).toHaveBeenCalledWith('Fetching appointment by id', {
+        appointmentId: 'test-id',
+      });
+    });
+
+    it('should log retrieved appointment', async () => {
+      const appointment = Appointment.create({
+        insuredId: '12345',
+        scheduleId: 100,
+        countryISO: 'PE',
+      });
+
+      mockAppointmentRepo.findByIdOrFail.mockResolvedValueOnce(appointment);
+
+      await service.getAppointmentById(appointment.id);
+
+      expect(mockLogger.info).toHaveBeenCalledWith('Appointment retrieved', {
+        appointmentId: appointment.id,
+      });
+    });
+
+    it('should call repository with correct appointmentId', async () => {
+      const appointment = Appointment.create({
+        insuredId: '12345',
+        scheduleId: 100,
+        countryISO: 'PE',
+      });
+
+      mockAppointmentRepo.findByIdOrFail.mockResolvedValueOnce(appointment);
+
+      await service.getAppointmentById('test-appointment-id');
+
+      expect(mockAppointmentRepo.findByIdOrFail).toHaveBeenCalledWith('test-appointment-id');
+    });
+
+    it('should return appointment as DTO', async () => {
+      const appointment = Appointment.create({
+        insuredId: '12345',
+        scheduleId: 100,
+        countryISO: 'PE',
+      });
+
+      mockAppointmentRepo.findByIdOrFail.mockResolvedValueOnce(appointment);
+
+      const result = await service.getAppointmentById(appointment.id);
+
+      expect(result).toEqual(appointment.toDTO());
+    });
+  });
 });

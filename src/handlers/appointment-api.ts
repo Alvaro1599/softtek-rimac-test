@@ -9,6 +9,7 @@ import { Logger } from '../utils/logger';
 
 export const handler = withApiHandler(async (event, logger) => {
   const method = event.requestContext.http.method;
+  const path = event.requestContext.http.path;
 
   const service = createAppointmentService(logger);
 
@@ -17,7 +18,12 @@ export const handler = withApiHandler(async (event, logger) => {
   }
 
   if (method === 'GET') {
-    return await handleGetAppointments(event, service, logger);
+    // GET /appointments/insured/{insuredId} - all appointments for insured
+    if (path.includes('/appointments/insured/')) {
+      return await handleGetAppointments(event, service, logger);
+    }
+    // GET /appointments/{appointmentId} - single appointment
+    return await handleGetAppointmentById(event, service, logger);
   }
 
   throw new MethodNotAllowedError(['GET', 'POST']);
@@ -43,6 +49,19 @@ async function handleGetAppointments(
 ) {
   const insuredId = event.pathParameters?.insuredId;
   const result = await service.getAppointmentsByInsuredId(insuredId);
+
+  return successResponse(result, 200, {
+    requestId: event.requestContext.requestId,
+  });
+}
+
+async function handleGetAppointmentById(
+  event: APIGatewayProxyEventV2,
+  service: ReturnType<typeof createAppointmentService>,
+  logger: Logger
+) {
+  const appointmentId = event.pathParameters?.appointmentId;
+  const result = await service.getAppointmentById(appointmentId);
 
   return successResponse(result, 200, {
     requestId: event.requestContext.requestId,
