@@ -1,0 +1,276 @@
+service: medical-appointment-system
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  architecture: x86_64
+
+  # Configuración de logs mejorada para v4
+  logs:
+    httpApi: true
+
+  environment:
+    APPOINTMENTS_TABLE: ${self:service}-appointments-${self:provider.stage}
+    SNS_TOPIC_ARN: !Ref AppointmentTopic
+    SQS_PE_URL: !Ref SqsPE
+    SQS_CL_URL: !Ref SqsCL
+    SQS_COMPLETED_URL: !Ref SqsCompleted
+    EVENT_BUS_NAME: ${self:service}-events-${self:provider.stage}
+    # Mock RDS credentials
+    RDS_PE_HOST: ${env:RDS_PE_HOST, 'localhost'}
+    RDS_PE_PORT: ${env:RDS_PE_PORT, '3306'}
+    RDS_PE_USER: ${env:RDS_PE_USER, 'admin'}
+    RDS_PE_PASSWORD: ${env:RDS_PE_PASSWORD, 'password'}
+    RDS_PE_DATABASE: ${env:RDS_PE_DATABASE, 'appointments_pe'}
+    RDS_CL_HOST: ${env:RDS_CL_HOST, 'localhost'}
+    RDS_CL_PORT: ${env:RDS_CL_PORT, '3306'}
+    RDS_CL_USER: ${env:RDS_CL_USER, 'admin'}
+    RDS_CL_PASSWORD: ${env:RDS_CL_PASSWORD, 'password'}
+    RDS_CL_DATABASE: ${env:RDS_CL_DATABASE, 'appointments_cl'}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource:
+            - !GetAtt AppointmentsTable.Arn
+            - !Sub '${AppointmentsTable.Arn}/index/*'
+        - Effect: Allow
+          Action:
+            - sns:Publish
+          Resource: !Ref AppointmentTopic
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - !GetAtt SqsPE.Arn
+            - !GetAtt SqsCL.Arn
+            - !GetAtt SqsCompleted.Arn
+        - Effect: Allow
+          Action:
+            - events:PutEvents
+          Resource: !GetAtt EventBus.Arn
+
+plugins:
+  - serverless-offline
+  - serverless-localstack
+
+# Configuración de build para TypeScript (v4 nativo)
+build:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap:
+      type: linked
+      setNodeOptions: true
+    external:
+      - '@aws-sdk/*'
+    buildConcurrency: 3
+
+custom:
+  localstack:
+    stages:
+      - local
+    host: http://localhost
+    edgePort: 4566
+    autostart: false
+  serverless-offline:
+    httpPort: 3000
+    useChildProcesses: true
+
+functions:
+  # Lambda principal para API Gateway
+  appointment:
+    handler: src/lambdas/appointment.handler
+    events:
+      - httpApi:
+          path: /appointments
+          method: POST
+      - httpApi:
+          path: /appointments/{insuredId}
+          method: GET
+
+  # Consumer para actualizar estado a completed
+  appointmentCompleted:
+    handler: src/lambdas/appointment-completed.handler
+    events:
+      - sqs:
+          arn: !GetAtt SqsCompleted.Arn
+          batchSize: 10
+
+  # Lambda para procesar agendamientos de PE
+  appointmentPE:
+    handler: src/lambdas/appointment-pe.handler
+    events:
+      - sqs:
+          arn: !GetAtt SqsPE.Arn
+          batchSize: 10
+
+  # Lambda para procesar agendamientos de CL
+  appointmentCL:
+    handler: src/lambdas/appointment-cl.handler
+    events:
+      - sqs:
+          arn: !GetAtt SqsCL.Arn
+          batchSize: 10
+
+resources:
+  Resources:
+    # DynamoDB Table
+    AppointmentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.APPOINTMENTS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: appointmentId
+            AttributeType: S
+          - AttributeName: insuredId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: appointmentId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: InsuredIdIndex
+            KeySchema:
+              - AttributeName: insuredId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    # SNS Topic
+    AppointmentTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:service}-topic-${self:provider.stage}
+
+    # Subscription SNS -> SQS PE
+    SubscriptionPE:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        TopicArn: !Ref AppointmentTopic
+        Endpoint: !GetAtt SqsPE.Arn
+        FilterPolicy:
+          countryISO:
+            - PE
+        RawMessageDelivery: false
+
+    # Subscription SNS -> SQS CL
+    SubscriptionCL:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        TopicArn: !Ref AppointmentTopic
+        Endpoint: !GetAtt SqsCL.Arn
+        FilterPolicy:
+          countryISO:
+            - CL
+        RawMessageDelivery: false
+
+    # SQS Queue PE
+    SqsPE:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-sqs-pe-${self:provider.stage}
+        VisibilityTimeout: 300
+
+    # SQS Queue CL
+    SqsCL:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-sqs-cl-${self:provider.stage}
+        VisibilityTimeout: 300
+
+    # SQS Queue for Completed
+    SqsCompleted:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-sqs-completed-${self:provider.stage}
+        VisibilityTimeout: 300
+
+    # SQS Policy para permitir SNS escribir
+    SqsPEPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SqsPE
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: sns.amazonaws.com
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt SqsPE.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref AppointmentTopic
+
+    SqsCLPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SqsCL
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: sns.amazonaws.com
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt SqsCL.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref AppointmentTopic
+
+    # EventBridge Event Bus
+    EventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: ${self:provider.environment.EVENT_BUS_NAME}
+
+    # EventBridge Rule para enviar a SQS Completed
+    EventRule:
+      Type: AWS::Events::Rule
+      Properties:
+        EventBusName: !Ref EventBus
+        EventPattern:
+          source:
+            - appointment.service
+          detail-type:
+            - appointment.completed
+        State: ENABLED
+        Targets:
+          - Arn: !GetAtt SqsCompleted.Arn
+            Id: SqsCompletedTarget
+
+    # Permission para EventBridge escribir en SQS
+    EventBridgeToSqsPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref SqsCompleted
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt SqsCompleted.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !GetAtt EventRule.Arn

@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Serverless
+.serverless/
+.build/
+
+# TypeScript
+*.tsbuildinfo
+dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.cla
+
+# AWS
+.aws-sam/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.pdf
