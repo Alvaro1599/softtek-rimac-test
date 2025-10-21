@@ -1,9 +1,11 @@
 import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
-import { AppointmentCompletedEvent } from '../types';
+import { EventPayload } from '../events/types';
 
 const client = new EventBridgeClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
-export async function publishCompletedEvent(event: AppointmentCompletedEvent): Promise<void> {
+export async function publishCompletedEvent(
+  event: EventPayload<'appointment.completed'>
+): Promise<void> {
   await client.send(
     new PutEventsCommand({
       Entries: [

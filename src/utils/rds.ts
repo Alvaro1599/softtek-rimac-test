@@ -1,8 +1,8 @@
-import { AppointmentRequest } from '../types';
+import { EventPayload } from '../events/types';
 
-// Mock RDS connection - En producción, usarías mysql2
+// Mock RDS connection
 export async function saveToRDS(
-  appointment: AppointmentRequest & { appointmentId: string },
+  appointment: EventPayload<'appointment.created'>,
   country: 'PE' | 'CL'
 ): Promise<void> {
   const dbConfig = country === 'PE'
