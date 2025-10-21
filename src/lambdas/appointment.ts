@@ -1,6 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { randomUUID } from 'crypto';
-import { AppointmentRequest, AppointmentRecord } from '../types';
+import { AppointmentRecord } from '../types';
+import { CreateAppointmentInput } from '../events/types';
 import { saveAppointment, getAppointmentsByInsuredId } from '../utils/dynamodb';
 import { publishToSNS } from '../utils/sns';
 
@@ -45,7 +46,7 @@ async function createAppointment(event: APIGatewayProxyEventV2): Promise<APIGate
     };
   }
 
-  const request: AppointmentRequest = JSON.parse(event.body);
+  const request: CreateAppointmentInput = JSON.parse(event.body);
 
   if (!request.insuredId || !request.scheduleId || !request.countryISO) {
     return {
@@ -88,7 +89,10 @@ async function createAppointment(event: APIGatewayProxyEventV2): Promise<APIGate
 
   await publishToSNS({
     appointmentId,
-    ...request,
+    insuredId: request.insuredId,
+    scheduleId: request.scheduleId,
+    countryISO: request.countryISO,
+    timestamp: now,
   });
 
   return {

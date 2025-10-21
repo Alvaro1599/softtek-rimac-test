@@ -1,7 +1,7 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
-import { AppointmentRequest } from '../types';
 import { saveToRDS } from '../utils/rds';
 import { publishCompletedEvent } from '../utils/eventbridge';
+import { parseSNSMessage, EventPayload } from '../events/types';
 
 export const handler = async (event: SQSEvent): Promise<void> => {
   console.log('[PE] Processing SQS messages:', event.Records.length);
@@ -9,12 +9,11 @@ export const handler = async (event: SQSEvent): Promise<void> => {
   for (const record of event.Records) {
     await processRecord(record);
   }
-}
+};
 
 async function processRecord(record: SQSRecord): Promise<void> {
   try {
-    const snsMessage = JSON.parse(record.body);
-    const appointment: AppointmentRequest & { appointmentId: string } = JSON.parse(snsMessage.Message);
+    const appointment: EventPayload<'appointment.created'> = parseSNSMessage(record.body);
 
     console.log('[PE] Processing appointment:', appointment);
 

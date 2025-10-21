@@ -1,6 +1,6 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
-import { AppointmentCompletedEvent } from '../types';
 import { updateAppointmentStatus } from '../utils/dynamodb';
+import { EventPayload } from '../events/types';
 
 export const handler = async (event: SQSEvent): Promise<void> => {
   console.log('[COMPLETED] Processing SQS messages:', event.Records.length);
@@ -13,7 +13,7 @@ export const handler = async (event: SQSEvent): Promise<void> => {
 async function processRecord(record: SQSRecord): Promise<void> {
   try {
     const eventBridgeMessage = JSON.parse(record.body);
-    const completedEvent: AppointmentCompletedEvent = eventBridgeMessage.detail;
+    const completedEvent: EventPayload<'appointment.completed'> = eventBridgeMessage.detail;
 
     console.log('[COMPLETED] Processing completed event:', completedEvent);
 
