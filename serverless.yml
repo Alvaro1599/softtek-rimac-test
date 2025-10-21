@@ -99,7 +99,26 @@ functions:
           path: /appointments
           method: POST
       - httpApi:
-          path: /appointments/{insuredId}
+          path: /appointments/insured/{insuredId}
+          method: GET
+      - httpApi:
+          path: /appointments/{appointmentId}
+          method: GET
+
+  # Lambda para consultar horarios disponibles
+  schedule:
+    handler: src/lambdas/schedule.handler
+    events:
+      - httpApi:
+          path: /schedules/available
+          method: GET
+
+  # Lambda para health check
+  health:
+    handler: src/lambdas/health.handler
+    events:
+      - httpApi:
+          path: /health
           method: GET
 
   # Consumer para actualizar estado a completed
