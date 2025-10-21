@@ -1,25 +1,25 @@
-import { SQSEvent, SQSRecord } from 'aws-lambda';
+import { SQSEvent } from 'aws-lambda';
 import { saveToRDS } from '../utils/rds';
 import { publishCompletedEvent } from '../utils/eventbridge';
 import { parseSNSMessage, EventPayload } from '../events/types';
+import { withBatchEventHandler } from '../utils/lambda-wrapper';
 
 export const handler = async (event: SQSEvent): Promise<void> => {
-  console.log('[CL] Processing SQS messages:', event.Records.length);
-
-  for (const record of event.Records) {
-    await processRecord(record);
-  }
-};
-
-async function processRecord(record: SQSRecord): Promise<void> {
-  try {
+  const processRecord = withBatchEventHandler(async (record, logger) => {
     const appointment: EventPayload<'appointment.created'> = parseSNSMessage(record.body);
 
-    console.log('[CL] Processing appointment:', appointment);
+    logger.info('[CL] Processing appointment', {
+      appointmentId: appointment.appointmentId,
+      insuredId: appointment.insuredId,
+      countryISO: appointment.countryISO,
+    });
 
+    // Guardar en RDS de Chile
     await saveToRDS(appointment, 'CL');
 
-    console.log('[CL] Appointment saved to RDS:', appointment.appointmentId);
+    logger.info('[CL] Appointment saved to RDS', {
+      appointmentId: appointment.appointmentId,
+    });
 
     await publishCompletedEvent({
       appointmentId: appointment.appointmentId,
@@ -29,9 +29,12 @@ async function processRecord(record: SQSRecord): Promise<void> {
       timestamp: new Date().toISOString(),
     });
 
-    console.log('[CL] Completion event published:', appointment.appointmentId);
-  } catch (error) {
-    console.error('[CL] Error processing record:', error);
-    throw error;
-  }
-}
+    logger.info('[CL] Completion event published', {
+      appointmentId: appointment.appointmentId,
+    });
+
+    return { success: true };
+  }, { eventSource: 'CL_PROCESSOR' });
+
+  await processRecord(event.Records);
+};
