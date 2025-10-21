@@ -14,5 +14,5 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", ".serverless", ".build"]
+  "exclude": ["node_modules", ".serverless", ".build", "**/*.test.ts"]
 }
