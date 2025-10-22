@@ -18,8 +18,8 @@ export const handler = withApiHandler(async (event, logger) => {
   }
 
   if (method === 'GET') {
-    // GET /appointments/insured/{insuredId} - all appointments for insured
-    if (path.includes('/appointments/insured/')) {
+    // GET /insured/{insuredId}/appointments - all appointments for insured
+    if (path.includes('/insured/')) {
       return await handleGetAppointments(event, service, logger);
     }
     // GET /appointments/{appointmentId} - single appointment
