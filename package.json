@@ -12,7 +12,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:verbose": "jest --verbose",
-    "prepare:web": "aws s3 sync web/ s3://softtek-rimac-page/ --delete --cache-control 'max-age=31536000,public' --exclude '*.html' && aws s3 sync web/ s3://softtek-rimac-page/ --cache-control 'no-cache' --exclude '*' --include '*.html'"
+    "prepare:web": "aws s3 sync web/ s3://softtek-rimac-page/ --delete --cache-control 'max-age=31536000,public' --exclude '*.html' --exclude '*.yaml' && aws s3 sync web/ s3://softtek-rimac-page/ --cache-control 'no-cache' --exclude '*' --include '*.html' --include '*.yaml'"
   },
   "keywords": [
     "serverless",
