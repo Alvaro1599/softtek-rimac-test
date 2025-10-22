@@ -107,16 +107,6 @@ functions:
           path: /appointments/{appointmentId}
           method: GET
 
-  # Lambda para consultar horarios disponibles
-  schedule:
-    handler: src/lambdas/schedule.handler
-    url:
-      cors: true
-    events:
-      - httpApi:
-          path: /schedules/available
-          method: GET
-
   # Lambda para health check
   health:
     handler: src/lambdas/health.handler
