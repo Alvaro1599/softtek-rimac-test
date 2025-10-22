@@ -94,12 +94,14 @@ functions:
   # Lambda principal para API Gateway
   appointment:
     handler: src/lambdas/appointment.handler
+    url:
+      cors: true
     events:
       - httpApi:
           path: /appointments
           method: POST
       - httpApi:
-          path: /appointments/insured/{insuredId}
+          path: /insured/{insuredId}/appointments
           method: GET
       - httpApi:
           path: /appointments/{appointmentId}
@@ -108,6 +110,8 @@ functions:
   # Lambda para consultar horarios disponibles
   schedule:
     handler: src/lambdas/schedule.handler
+    url:
+      cors: true
     events:
       - httpApi:
           path: /schedules/available
@@ -116,6 +120,8 @@ functions:
   # Lambda para health check
   health:
     handler: src/lambdas/health.handler
+    url:
+      cors: true
     events:
       - httpApi:
           path: /health
@@ -124,6 +130,8 @@ functions:
   # Consumer para actualizar estado a completed
   appointmentCompleted:
     handler: src/lambdas/appointment-completed.handler
+    url:
+      cors: true
     events:
       - sqs:
           arn: !GetAtt SqsCompleted.Arn
@@ -132,6 +140,8 @@ functions:
   # Lambda para procesar agendamientos de PE
   appointmentPE:
     handler: src/lambdas/appointment-pe.handler
+    url:
+      cors: true
     events:
       - sqs:
           arn: !GetAtt SqsPE.Arn
@@ -140,6 +150,8 @@ functions:
   # Lambda para procesar agendamientos de CL
   appointmentCL:
     handler: src/lambdas/appointment-cl.handler
+    url:
+      cors: true
     events:
       - sqs:
           arn: !GetAtt SqsCL.Arn
