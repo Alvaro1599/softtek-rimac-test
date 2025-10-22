@@ -43,16 +43,6 @@ class ApiClient {
   }
 
   /**
-   * GET /schedules/available - Get available schedules
-   * @param {Object} params - Query parameters (service, specialty, date, etc.)
-   */
-  async getAvailableSchedules(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    const endpoint = queryString ? `/schedules/available?${queryString}` : '/schedules/available';
-    return this.request(endpoint);
-  }
-
-  /**
    * POST /appointments - Create a new appointment
    * @param {Object} appointmentData - Appointment details
    */
