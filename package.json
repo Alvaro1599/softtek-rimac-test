@@ -12,7 +12,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:verbose": "jest --verbose",
-    "prepare:web": "echo '✓ Web files ready in /web folder for manual upload to S3 or your hosting service'"
+    "prepare:web": "aws s3 sync web/ s3://softtek-rimac-page/ --delete --cache-control 'max-age=31536000,public' --exclude '*.html' && aws s3 sync web/ s3://softtek-rimac-page/ --cache-control 'no-cache' --exclude '*' --include '*.html'"
   },
   "keywords": [
     "serverless",
