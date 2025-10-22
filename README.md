@@ -2,6 +2,12 @@
 
 Sistema de agendamiento de citas médicas desarrollado con arquitectura serverless en AWS. El sistema permite gestionar citas médicas para múltiples países (Perú y Chile) utilizando servicios nativos de AWS para procesamiento asíncrono y almacenamiento distribuido.
 
+## 🌐 Enlaces de Producción
+
+- **Aplicación Web**: https://d21ntub0jvmtse.cloudfront.net
+- **Documentación API**: https://d21ntub0jvmtse.cloudfront.net/api-docs.html
+- **API Base URL**: https://nlhic74tlk.execute-api.us-east-1.amazonaws.com
+
 ## 📑 Tabla de Contenidos
 
 - [Inicio Rápido](#inicio-rápido)
@@ -95,8 +101,8 @@ aws cloudfront create-invalidation \
   --paths "/*"
 
 # 7. Acceder a:
-# - Frontend: http://softtek-rimac-page.s3-website-us-east-1.amazonaws.com
-# - API Docs: http://softtek-rimac-page.s3-website-us-east-1.amazonaws.com/api-docs.html
+# - Frontend: https://d21ntub0jvmtse.cloudfront.net
+# - API Docs: https://d21ntub0jvmtse.cloudfront.net/api-docs.html
 ```
 
 **⚠️ Checklist Pre-Deployment:**
@@ -251,7 +257,7 @@ El proyecto incluye documentación interactiva de la API usando **Swagger UI** y
 
 ##### Aplicación Web (Frontend)
 ```
-Producción:  http://softtek-rimac-page.s3-website-us-east-1.amazonaws.com/
+Producción:  https://d21ntub0jvmtse.cloudfront.net
 Local:       Abrir web/index.html en el navegador
 
 Páginas disponibles:
@@ -262,15 +268,15 @@ Páginas disponibles:
 
 ##### Documentación Swagger
 ```
-Swagger UI:      http://softtek-rimac-page.s3-website-us-east-1.amazonaws.com/api-docs.html
-OpenAPI YAML:    http://softtek-rimac-page.s3-website-us-east-1.amazonaws.com/openapi.yaml
+Swagger UI:      https://d21ntub0jvmtse.cloudfront.net/api-docs.html
+OpenAPI YAML:    https://d21ntub0jvmtse.cloudfront.net/openapi.yaml
 Local Swagger:   Abrir web/api-docs.html en el navegador
 Local YAML:      web/openapi.yaml
 ```
 
 ##### API Endpoints (Backend)
 ```
-Base URL Dev:  https://nlhic74tlk.execute-api.us-east-1.amazonaws.com
+Base URL:  https://nlhic74tlk.execute-api.us-east-1.amazonaws.com
 
 Endpoints disponibles:
 ├── GET  /health                              # Health check
@@ -279,13 +285,13 @@ Endpoints disponibles:
 └── GET  /appointments/{appointmentId}       # Detalle de cita
 ```
 
-**Nota**: El `{api-id}` se genera automáticamente al desplegar con `pnpm deploy` y se mostrará en la salida del comando.
-
 #### Acceder a la Documentación
 
-2. **Dev**:
-   - URL directa: `http://softtek-rimac-page.s3-website-us-east-1.amazonaws.com/api-docs.html`
+1. **Producción**:
+   - URL directa: `https://d21ntub0jvmtse.cloudfront.net/api-docs.html`
    - Desde la app: Click en el botón "📚 API Docs" en la navegación superior
+
+2. **Local**: Abrir `web/api-docs.html` en el navegador
 
 3. **Desde Frontend**: Click en el botón "API Docs" en cualquier página
 
@@ -473,9 +479,9 @@ aws cloudfront list-distributions --query 'DistributionList.Items[*].[Id,DomainN
 
 Una vez desplegado, el frontend estará disponible en:
 
-**URL Principal (S3 Website)**:
+**URL Principal (CloudFront)**:
 ```
-http://softtek-rimac-page.s3-website-us-east-1.amazonaws.com
+https://d21ntub0jvmtse.cloudfront.net
 ```
 
 **Páginas Disponibles**:
@@ -483,12 +489,6 @@ http://softtek-rimac-page.s3-website-us-east-1.amazonaws.com
 - `/my-appointments.html` - Consultar mis citas
 - `/api-docs.html` - Documentación de la API (Swagger UI)
 - `/openapi.yaml` - Especificación OpenAPI (descargable)
-
-**CloudFront (opcional)**: Si tienes CloudFront configurado, las URLs serán:
-```
-https://d1234567890abc.cloudfront.net/
-https://your-custom-domain.com/  (si tienes dominio personalizado)
-```
 
 ### Configuración del API Base URL
 
@@ -506,7 +506,7 @@ endpoints:
   GET - https://abc123xyz.execute-api.us-east-1.amazonaws.com/appointments/{appointmentId}
 ```
 
-Copia la URL base (sin el path): `https://abc123xyz.execute-api.us-east-1.amazonaws.com`
+**URL actual de producción**: `https://nlhic74tlk.execute-api.us-east-1.amazonaws.com`
 
 #### Configurar el Frontend
 
@@ -517,11 +517,11 @@ const CONFIG = {
   // Local development
   local: 'http://localhost:3000',
 
-  // Development environment - ACTUALIZAR ESTA URL
-  dev: 'https://abc123xyz.execute-api.us-east-1.amazonaws.com',
+  // Development environment
+  dev: 'https://nlhic74tlk.execute-api.us-east-1.amazonaws.com',
 
   // Production environment
-  prod: 'https://your-prod-api-id.execute-api.us-east-1.amazonaws.com'
+  prod: 'https://nlhic74tlk.execute-api.us-east-1.amazonaws.com'
 };
 
 // Cambiar el ambiente según necesites
