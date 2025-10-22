@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Citas - Sistema de Agendamiento</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-blue-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-hospital-alt text-2xl"></i>
+          <h1 class="text-xl font-bold">Sistema de Agendamiento Médico</h1>
+        </div>
+        <div class="space-x-4">
+          <a href="index.html" class="px-4 py-2 hover:bg-blue-700 rounded-lg transition">
+            <i class="fas fa-calendar-plus mr-2"></i>Agendar Cita
+          </a>
+          <a href="my-appointments.html" class="px-4 py-2 bg-blue-700 rounded-lg font-semibold">
+            <i class="fas fa-list mr-2"></i>Mis Citas
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">
+          <i class="fas fa-clipboard-list text-blue-600 mr-2"></i>
+          Mis Citas Médicas
+        </h2>
+        <p class="text-gray-600">Consulte el estado de sus citas agendadas</p>
+      </div>
+
+      <!-- Search Section -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex space-x-4">
+          <div class="flex-1">
+            <label for="insuredIdSearch" class="block text-gray-700 font-semibold mb-2">
+              <i class="fas fa-id-card text-blue-600 mr-2"></i>
+              ID del Asegurado
+            </label>
+            <input
+              type="text"
+              id="insuredIdSearch"
+              placeholder="Ingrese su ID de asegurado"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+          </div>
+          <div class="flex items-end space-x-2">
+            <button
+              id="searchBtn"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200"
+            >
+              <i class="fas fa-search mr-2"></i>Buscar
+            </button>
+            <button
+              id="refreshBtn"
+              class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 hidden"
+              title="Actualizar lista de citas"
+            >
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert Messages -->
+      <div id="alertContainer" class="mb-6"></div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="text-center py-12 hidden">
+        <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+        <p class="text-gray-600">Cargando citas...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="bg-white rounded-lg shadow-md p-12 text-center hidden">
+        <i class="fas fa-calendar-times text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">No se encontraron citas</h3>
+        <p class="text-gray-500 mb-6">No hay citas registradas para este ID de asegurado</p>
+        <a href="index.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+          <i class="fas fa-calendar-plus mr-2"></i>Agendar Nueva Cita
+        </a>
+      </div>
+
+      <!-- Appointments List -->
+      <div id="appointmentsContainer" class="hidden">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <!-- Stats Summary -->
+          <div id="statsContainer" class="bg-gray-50 border-b border-gray-200 p-4"></div>
+
+          <!-- Appointments Table (Desktop) -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-100 border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID Cita</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Schedule ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">País</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fecha Creación</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actualizada</th>
+                </tr>
+              </thead>
+              <tbody id="appointmentsTableBody" class="divide-y divide-gray-200">
+                <!-- Appointments will be inserted here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Appointments Cards (Mobile) -->
+          <div id="appointmentsCards" class="md:hidden divide-y divide-gray-200">
+            <!-- Cards will be inserted here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-6 mt-12">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2024 Sistema de Agendamiento Médico. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/api-client.js"></script>
+  <script>
+    // DOM Elements
+    const insuredIdSearch = document.getElementById('insuredIdSearch');
+    const searchBtn = document.getElementById('searchBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const alertContainer = document.getElementById('alertContainer');
+    const loadingState = document.getElementById('loadingState');
+    const emptyState = document.getElementById('emptyState');
+    const appointmentsContainer = document.getElementById('appointmentsContainer');
+    const appointmentsTableBody = document.getElementById('appointmentsTableBody');
+    const appointmentsCards = document.getElementById('appointmentsCards');
+    const statsContainer = document.getElementById('statsContainer');
+
+    let currentInsuredId = null;
+
+    // Alert Helper
+    function showAlert(message, type = 'info') {
+      const alertColors = {
+        success: 'bg-green-100 border-green-500 text-green-700',
+        error: 'bg-red-100 border-red-500 text-red-700',
+        info: 'bg-blue-100 border-blue-500 text-blue-700',
+        warning: 'bg-yellow-100 border-yellow-500 text-yellow-700'
+      };
+
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        info: 'fa-info-circle',
+        warning: 'fa-exclamation-triangle'
+      };
+
+      alertContainer.innerHTML = `
+        <div class="border-l-4 ${alertColors[type]} p-4 rounded-lg">
+          <div class="flex items-center">
+            <i class="fas ${icons[type]} mr-3"></i>
+            <p>${message}</p>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        alertContainer.innerHTML = '';
+      }, 5000);
+    }
+
+    // Status Badge Helper
+    function getStatusBadge(status) {
+      const statusConfig = {
+        pending: { color: 'bg-yellow-100 text-yellow-800', icon: 'fa-clock', text: 'Pendiente' },
+        processing: { color: 'bg-blue-100 text-blue-800', icon: 'fa-spinner', text: 'Procesando' },
+        completed: { color: 'bg-green-100 text-green-800', icon: 'fa-check-circle', text: 'Completada' },
+        cancelled: { color: 'bg-red-100 text-red-800', icon: 'fa-times-circle', text: 'Cancelada' },
+        failed: { color: 'bg-red-100 text-red-800', icon: 'fa-exclamation-circle', text: 'Fallida' }
+      };
+
+      const config = statusConfig[status] || statusConfig.pending;
+
+      return `
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${config.color}">
+          <i class="fas ${config.icon} mr-2"></i>${config.text}
+        </span>
+      `;
+    }
+
+    // Format Date Helper
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    // Calculate Statistics
+    function calculateStats(appointments) {
+      // Ensure appointments is an array
+      const appointmentsArray = Array.isArray(appointments) ? appointments : [];
+
+      const total = appointmentsArray.length;
+      const pending = appointmentsArray.filter(a => a.status === 'pending').length;
+      const processing = appointmentsArray.filter(a => a.status === 'processing').length;
+      const completed = appointmentsArray.filter(a => a.status === 'completed').length;
+
+      statsContainer.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center">
+            <p class="text-2xl font-bold text-gray-800">${total}</p>
+            <p class="text-sm text-gray-600">Total</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-bold text-yellow-600">${pending}</p>
+            <p class="text-sm text-gray-600">Pendientes</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-bold text-blue-600">${processing}</p>
+            <p class="text-sm text-gray-600">Procesando</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-bold text-green-600">${completed}</p>
+            <p class="text-sm text-gray-600">Completadas</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Display Appointments
+    function displayAppointments(appointments) {
+      // Ensure appointments is an array
+      // API returns: {insuredId, count, appointments: [...]}
+      const appointmentsArray = appointments?.data?.appointments;
+
+      if (!appointmentsArray || appointmentsArray.length === 0) {
+        showEmptyState();
+        return;
+      }
+
+      // Calculate and display stats
+      calculateStats(appointmentsArray);
+
+      // Sort by creation date (newest first)
+      appointmentsArray.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // Desktop Table View
+      appointmentsTableBody.innerHTML = appointmentsArray.map(apt => `
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm font-mono text-gray-900">${apt.appointmentId || 'N/A'}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm font-mono text-blue-600">${apt.scheduleId || 'N/A'}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm text-gray-900">${apt.countryISO || 'N/A'}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            ${getStatusBadge(apt.status)}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${formatDate(apt.createdAt)}</div>
+            <div class="text-xs text-gray-500">${new Date(apt.createdAt).toLocaleTimeString('es-ES')}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${formatDate(apt.updatedAt)}</div>
+            <div class="text-xs text-gray-500">${new Date(apt.updatedAt).toLocaleTimeString('es-ES')}</div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Mobile Cards View
+      appointmentsCards.innerHTML = appointmentsArray.map(apt => `
+        <div class="p-4 space-y-3">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm font-semibold text-gray-900">Cita #${apt.appointmentId?.slice(0, 8) || 'N/A'}</p>
+              <p class="text-xs text-gray-500 font-mono mt-1">Schedule: ${apt.scheduleId || 'N/A'}</p>
+            </div>
+            ${getStatusBadge(apt.status)}
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <p class="text-gray-500">País</p>
+              <p class="font-semibold text-gray-900">${apt.countryISO || 'N/A'}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Schedule ID</p>
+              <p class="font-semibold text-blue-600">${apt.scheduleId || 'N/A'}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Creada</p>
+              <p class="font-semibold text-gray-900">${formatDate(apt.createdAt)}</p>
+              <p class="text-xs text-gray-500">${new Date(apt.createdAt).toLocaleTimeString('es-ES')}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Actualizada</p>
+              <p class="font-semibold text-gray-900">${formatDate(apt.updatedAt)}</p>
+              <p class="text-xs text-gray-500">${new Date(apt.updatedAt).toLocaleTimeString('es-ES')}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      showAppointmentsContainer();
+    }
+
+    // Show/Hide States
+    function showLoadingState() {
+      loadingState.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      appointmentsContainer.classList.add('hidden');
+      alertContainer.innerHTML = '';
+    }
+
+    function showEmptyState() {
+      loadingState.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      appointmentsContainer.classList.add('hidden');
+    }
+
+    function showAppointmentsContainer() {
+      loadingState.classList.add('hidden');
+      emptyState.classList.add('hidden');
+      appointmentsContainer.classList.remove('hidden');
+      refreshBtn.classList.remove('hidden');
+    }
+
+    // Load Appointments
+    async function loadAppointments(insuredId) {
+      if (!insuredId || insuredId.trim() === '') {
+        showAlert('Por favor ingrese un ID de asegurado válido', 'warning');
+        return;
+      }
+
+      currentInsuredId = insuredId;
+      showLoadingState();
+
+      searchBtn.disabled = true;
+      searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Buscando...';
+
+      const result = await apiClient.getAppointmentsByInsured(insuredId);
+
+      searchBtn.disabled = false;
+      searchBtn.innerHTML = '<i class="fas fa-search mr-2"></i>Buscar';
+
+      if (result.success) {
+        displayAppointments(result.data);
+      } else {
+        showAlert(`Error al cargar citas: ${result.error}`, 'error');
+        showEmptyState();
+      }
+    }
+
+    // Event Listeners
+    searchBtn.addEventListener('click', () => {
+      loadAppointments(insuredIdSearch.value);
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      if (currentInsuredId) {
+        showAlert('Actualizando lista de citas...', 'info');
+        loadAppointments(currentInsuredId);
+      }
+    });
+
+    insuredIdSearch.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        loadAppointments(insuredIdSearch.value);
+      }
+    });
+  </script>
+</body>
+</html>

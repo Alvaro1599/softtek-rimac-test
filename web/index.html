@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Cita Médica - Sistema de Agendamiento</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-blue-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-hospital-alt text-2xl"></i>
+          <h1 class="text-xl font-bold">Sistema de Agendamiento Médico</h1>
+        </div>
+        <div class="space-x-4">
+          <a href="index.html" class="px-4 py-2 bg-blue-700 rounded-lg font-semibold">
+            <i class="fas fa-calendar-plus mr-2"></i>Agendar Cita
+          </a>
+          <a href="my-appointments.html" class="px-4 py-2 hover:bg-blue-700 rounded-lg transition">
+            <i class="fas fa-list mr-2"></i>Mis Citas
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+      <!-- Header -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">
+          <i class="fas fa-calendar-check text-blue-600 mr-2"></i>
+          Agendar Nueva Cita
+        </h2>
+        <p class="text-gray-600">Complete el formulario para agendar su cita médica</p>
+      </div>
+
+      <!-- Alert Messages -->
+      <div id="alertContainer" class="mb-6"></div>
+
+      <!-- Search Filters -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
+          <i class="fas fa-filter text-blue-600 mr-2"></i>
+          Buscar Horarios Disponibles
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <!-- Country -->
+          <div>
+            <label for="searchCountry" class="block text-gray-700 font-semibold mb-2">
+              <i class="fas fa-globe text-blue-600 mr-2"></i>
+              País *
+            </label>
+            <select
+              id="searchCountry"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Seleccione un país</option>
+              <option value="PE">Perú</option>
+              <option value="CL">Chile</option>
+            </select>
+          </div>
+
+          <!-- Date -->
+          <div>
+            <label for="searchDate" class="block text-gray-700 font-semibold mb-2">
+              <i class="fas fa-calendar text-blue-600 mr-2"></i>
+              Fecha *
+            </label>
+            <input
+              type="date"
+              id="searchDate"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+          </div>
+
+          <!-- Search Button -->
+          <div class="flex items-end">
+            <button
+              type="button"
+              id="searchSchedulesBtn"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200"
+            >
+              <i class="fas fa-search mr-2"></i>
+              Buscar Horarios
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointment Form -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
+          <i class="fas fa-calendar-check text-blue-600 mr-2"></i>
+          Datos de la Cita
+        </h3>
+        <form id="appointmentForm">
+          <!-- Insured ID -->
+          <div class="mb-4">
+            <label for="insuredId" class="block text-gray-700 font-semibold mb-2">
+              <i class="fas fa-id-card text-blue-600 mr-2"></i>
+              ID del Asegurado *
+            </label>
+            <input
+              type="text"
+              id="insuredId"
+              name="insuredId"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Ej: INS-12345"
+            >
+          </div>
+
+          <!-- Service -->
+          <div class="mb-4">
+            <label for="service" class="block text-gray-700 font-semibold mb-2">
+              <i class="fas fa-stethoscope text-blue-600 mr-2"></i>
+              Servicio *
+            </label>
+            <input
+              type="text"
+              id="service"
+              name="service"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Ej: Consulta General, Emergencia, Control"
+            >
+          </div>
+
+          <!-- Selected Schedule Summary (Hidden initially) -->
+          <div id="selectedScheduleSection" class="mb-6 hidden">
+            <label class="block text-gray-700 font-semibold mb-2">
+              <i class="fas fa-calendar-check text-blue-600 mr-2"></i>
+              Horario Seleccionado
+            </label>
+            <div id="selectedScheduleSummary" class="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+              <!-- Schedule summary will be inserted here -->
+            </div>
+          </div>
+
+          <!-- Hidden field for scheduleId -->
+          <input type="hidden" id="scheduleId" name="scheduleId">
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            id="submitBtn"
+            disabled
+            class="w-full bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 cursor-not-allowed"
+          >
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            Seleccione un horario primero
+          </button>
+        </form>
+      </div>
+
+      <!-- Available Schedules Section -->
+      <div id="schedulesSection" class="mt-6 hidden">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+            Horarios Disponibles
+          </h3>
+          <div id="schedulesContainer" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-6 mt-12">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2024 Sistema de Agendamiento Médico. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/api-client.js"></script>
+  <script>
+    // DOM Elements
+    const appointmentForm = document.getElementById('appointmentForm');
+    const searchSchedulesBtn = document.getElementById('searchSchedulesBtn');
+    const searchCountry = document.getElementById('searchCountry');
+    const searchDate = document.getElementById('searchDate');
+    const alertContainer = document.getElementById('alertContainer');
+    const schedulesSection = document.getElementById('schedulesSection');
+    const schedulesContainer = document.getElementById('schedulesContainer');
+    const selectedScheduleSection = document.getElementById('selectedScheduleSection');
+    const selectedScheduleSummary = document.getElementById('selectedScheduleSummary');
+    const scheduleIdInput = document.getElementById('scheduleId');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Set minimum date to today
+    searchDate.min = new Date().toISOString().split('T')[0];
+
+    // Store selected schedule globally
+    let selectedSchedule = null;
+
+    // Generate Mock Schedules for ALL specialties (no filtering)
+    function generateMockSchedules(countryISO, date) {
+      const schedules = [];
+      let scheduleIdCounter = 1000;
+
+      // Generate schedules for ALL specialties
+      MOCK_DATA.specialties.forEach((specialty) => {
+        // Generate schedules for each time slot
+        MOCK_DATA.times.forEach((time, index) => {
+          // Randomly assign availability (70% available, like backend)
+          const available = Math.random() > 0.3;
+
+          if (available) {
+            schedules.push({
+              scheduleId: scheduleIdCounter++,
+              date: date,
+              time: time,
+              specialtyId: specialty.id,
+              specialtyName: specialty.name,
+              doctorName: MOCK_DATA.doctors[countryISO][index % MOCK_DATA.doctors[countryISO].length],
+              medicalCenter: MOCK_DATA.medicalCenters[countryISO][index % MOCK_DATA.medicalCenters[countryISO].length],
+              countryISO: countryISO,
+              available: true
+            });
+          }
+        });
+      });
+
+      // Sort by time, then by specialty
+      schedules.sort((a, b) => {
+        if (a.time !== b.time) {
+          return a.time.localeCompare(b.time);
+        }
+        return a.specialtyName.localeCompare(b.specialtyName);
+      });
+
+      return schedules;
+    }
+
+    // Alert Helper
+    function showAlert(message, type = 'info') {
+      const alertColors = {
+        success: 'bg-green-100 border-green-500 text-green-700',
+        error: 'bg-red-100 border-red-500 text-red-700',
+        info: 'bg-blue-100 border-blue-500 text-blue-700',
+        warning: 'bg-yellow-100 border-yellow-500 text-yellow-700'
+      };
+
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        info: 'fa-info-circle',
+        warning: 'fa-exclamation-triangle'
+      };
+
+      alertContainer.innerHTML = `
+        <div class="border-l-4 ${alertColors[type]} p-4 rounded-lg">
+          <div class="flex items-center">
+            <i class="fas ${icons[type]} mr-3"></i>
+            <p>${message}</p>
+          </div>
+        </div>
+      `;
+
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        alertContainer.innerHTML = '';
+      }, 5000);
+    }
+
+    // Search Available Schedules (Mock - no API call)
+    searchSchedulesBtn.addEventListener('click', () => {
+      const country = searchCountry.value;
+      const date = searchDate.value;
+
+      if (!country || !date) {
+        showAlert('Por favor seleccione país y fecha para buscar horarios', 'warning');
+        return;
+      }
+
+      // Show loading state
+      searchSchedulesBtn.disabled = true;
+      searchSchedulesBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Buscando...';
+
+      // Simulate slight delay for realistic UX
+      setTimeout(() => {
+        // Generate mock schedules locally for ALL specialties
+        const mockSchedules = generateMockSchedules(country, date);
+
+        searchSchedulesBtn.disabled = false;
+        searchSchedulesBtn.innerHTML = '<i class="fas fa-search mr-2"></i>Buscar Horarios';
+
+        if (mockSchedules.length > 0) {
+          displaySchedules(mockSchedules);
+          showAlert(`Se encontraron ${mockSchedules.length} horarios disponibles`, 'success');
+        } else {
+          schedulesSection.classList.add('hidden');
+          showAlert('No hay horarios disponibles para la fecha seleccionada. Por favor intente con otra fecha.', 'warning');
+        }
+      }, 500);
+    });
+
+    function attachScheduleClickHandlers() {
+      const scheduleCards = document.querySelectorAll('.schedule-card');
+
+      scheduleCards.forEach(card => {
+        card.addEventListener('click', function() {
+          scheduleCards.forEach(c => {
+            c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+            c.classList.add('bg-gray-50');
+          });
+
+          // Highlight selected card
+          this.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+          this.classList.remove('bg-gray-50');
+
+          // Parse schedule data
+          const scheduleData = JSON.parse(this.dataset.schedule);
+
+          // Store selected schedule
+          selectedSchedule = scheduleData;
+
+          // Save scheduleId in hidden field
+          scheduleIdInput.value = scheduleData.scheduleId;
+
+          // Show schedule summary
+          displaySelectedScheduleSummary(scheduleData);
+
+          // Enable submit button
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+          submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+          submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Agendar Cita';
+
+          // Scroll to form smoothly
+          appointmentForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          // Show success message
+          showAlert(`Horario seleccionado: ${scheduleData.time} - ${scheduleData.specialtyName}. Complete los datos restantes y haga clic en "Agendar Cita".`, 'success');
+        });
+      });
+    }
+
+    // Display selected schedule summary
+    function displaySelectedScheduleSummary(schedule) {
+      const formattedDate = new Date(schedule.date).toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      selectedScheduleSummary.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <i class="fas fa-calendar-day text-blue-600 mr-3 text-xl"></i>
+              <div>
+                <p class="font-bold text-gray-900">${formattedDate}</p>
+                <p class="text-sm text-gray-600">Hora: ${schedule.time}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onclick="clearScheduleSelection()"
+              class="text-red-600 hover:text-red-700 text-sm font-semibold"
+            >
+              <i class="fas fa-times mr-1"></i>Cambiar
+            </button>
+          </div>
+          <hr class="border-blue-200">
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p class="text-gray-500">Especialidad</p>
+              <p class="font-semibold text-gray-900">${schedule.specialtyName}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Doctor</p>
+              <p class="font-semibold text-gray-900">${schedule.doctorName}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Centro Médico</p>
+              <p class="font-semibold text-gray-900">${schedule.medicalCenter}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">País</p>
+              <p class="font-semibold text-gray-900">${schedule.countryISO}</p>
+            </div>
+          </div>
+          <div class="text-xs text-gray-500 mt-2">
+            <i class="fas fa-key mr-1"></i>ID de Espacio: ${schedule.scheduleId}
+          </div>
+        </div>
+      `;
+
+      selectedScheduleSection.classList.remove('hidden');
+    }
+
+    // Clear schedule selection
+    window.clearScheduleSelection = function() {
+      selectedSchedule = null;
+      scheduleIdInput.value = '';
+      selectedScheduleSection.classList.add('hidden');
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+      submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+      submitBtn.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Seleccione un horario primero';
+
+      // Remove highlighting from cards
+      document.querySelectorAll('.schedule-card').forEach(c => {
+        c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+        c.classList.add('bg-gray-50');
+      });
+
+      showAlert('Selección de horario cancelada', 'info');
+    };
+
+    // Display Available Schedules with detailed info
+    function displaySchedules(schedules) {
+      if (!schedules || schedules.length === 0) {
+        schedulesContainer.innerHTML = '<p class="text-gray-600">No hay horarios disponibles para los parámetros seleccionados.</p>';
+      } else {
+        schedulesContainer.innerHTML = schedules.map(schedule => `
+          <div
+            class="schedule-card bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-blue-50 hover:border-blue-400 cursor-pointer transition-all duration-200"
+            data-schedule='${JSON.stringify(schedule)}'
+          >
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="flex items-center mb-2">
+                  <i class="fas fa-clock text-blue-600 mr-2"></i>
+                  <span class="font-bold text-lg text-gray-800">${schedule.time}</span>
+                </div>
+                <div class="text-sm text-gray-600 space-y-1">
+                  <div>
+                    <i class="fas fa-user-doctor text-gray-500 mr-2 w-4 inline-block text-center"></i>
+                    ${schedule.doctorName}
+                  </div>
+                  <div>
+                    <i class="fas fa-hospital text-gray-500 mr-2 w-4 inline-block text-center"></i>
+                    ${schedule.medicalCenter}
+                  </div>
+                  <div>
+                    <i class="fas fa-user-md text-gray-500 mr-2 w-4 inline-block text-center"></i>
+                    ${schedule.specialtyName}
+                  </div>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                  <i class="fas fa-check-circle mr-1"></i>Disponible
+                </span>
+                <div class="text-xs text-gray-500 mt-2">
+                  Click para seleccionar
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        // Add click handlers to schedule cards
+        attachScheduleClickHandlers();
+      }
+      schedulesSection.classList.remove('hidden');
+    }
+
+    // Handle Form Submission
+    appointmentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Validate that a schedule is selected
+      if (!selectedSchedule || !scheduleIdInput.value) {
+        showAlert('Por favor seleccione un horario disponible antes de agendar', 'warning');
+        return;
+      }
+
+      const formData = new FormData(appointmentForm);
+      const appointmentData = {
+        insuredId: formData.get('insuredId'),
+        countryISO: selectedSchedule.countryISO,
+        service: formData.get('service'),
+        scheduleId: parseInt(formData.get('scheduleId'))
+      };
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Agendando...';
+
+      const result = await apiClient.createAppointment(appointmentData);
+
+      // Re-enable submit button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Agendar Cita';
+
+      if (result.success) {
+        showAlert('Cita agendada exitosamente! Redirigiendo a mis citas...', 'success');
+
+        // Clear form and selections
+        document.getElementById('insuredId').value = '';
+        document.getElementById('service').value = '';
+        clearScheduleSelection();
+        schedulesSection.classList.add('hidden');
+
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          window.location.href = 'my-appointments.html';
+        }, 2000);
+      } else {
+        showAlert(`Error al agendar cita: ${result.error}`, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
