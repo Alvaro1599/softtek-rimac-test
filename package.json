@@ -6,11 +6,13 @@
   "scripts": {
     "start": "serverless offline start",
     "deploy": "serverless deploy",
+    "remove:deploy": "serverless remove",
     "remove": "serverless remove",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:verbose": "jest --verbose"
+    "test:verbose": "jest --verbose",
+    "prepare:web": "echo '✓ Web files ready in /web folder for manual upload to S3 or your hosting service'"
   },
   "keywords": [
     "serverless",
