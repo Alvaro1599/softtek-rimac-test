@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation - Sistema de Agendamiento Médico</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Swagger UI CSS -->
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css">
+
+  <style>
+    /* Custom styles to integrate Swagger UI with Tailwind */
+    .swagger-ui .topbar {
+      display: none;
+    }
+
+    .swagger-ui .info {
+      margin: 20px 0;
+    }
+
+    .swagger-ui .scheme-container {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    /* Customize colors to match the site theme */
+    .swagger-ui .btn.execute {
+      background-color: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .swagger-ui .btn.execute:hover {
+      background-color: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    .swagger-ui .opblock.opblock-post {
+      background: rgba(37, 99, 235, 0.1);
+      border-color: #2563eb;
+    }
+
+    .swagger-ui .opblock.opblock-get {
+      background: rgba(22, 163, 74, 0.1);
+      border-color: #16a34a;
+    }
+
+    .swagger-ui .opblock-tag {
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    #swagger-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-blue-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-hospital-alt text-2xl"></i>
+          <h1 class="text-xl font-bold">Sistema de Agendamiento Médico</h1>
+        </div>
+        <div class="space-x-4">
+          <a href="index.html" class="px-4 py-2 hover:bg-blue-700 rounded-lg transition">
+            <i class="fas fa-calendar-plus mr-2"></i>Agendar Cita
+          </a>
+          <a href="my-appointments.html" class="px-4 py-2 hover:bg-blue-700 rounded-lg transition">
+            <i class="fas fa-list mr-2"></i>Mis Citas
+          </a>
+          <a href="api-docs.html" class="px-4 py-2 bg-blue-700 rounded-lg font-semibold">
+            <i class="fas fa-book mr-2"></i>API Docs
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="py-8">
+    <!-- Header -->
+    <div class="container mx-auto px-4 mb-6">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">
+              <i class="fas fa-book text-blue-600 mr-3"></i>
+              Documentación de la API
+            </h2>
+            <p class="text-gray-600">
+              Especificación OpenAPI 3.0 - Medical Appointment System REST API
+            </p>
+          </div>
+          <div class="text-right">
+            <span class="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+              <i class="fas fa-code-branch mr-1"></i>
+              v1.0.0
+            </span>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">Enlaces Rápidos</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="#/Appointments" class="flex items-center p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
+              <i class="fas fa-calendar-check text-blue-600 text-xl mr-3"></i>
+              <div>
+                <p class="font-semibold text-gray-800">Endpoints de Citas</p>
+                <p class="text-xs text-gray-600">Crear y consultar citas</p>
+              </div>
+            </a>
+            <a href="#/Health" class="flex items-center p-3 bg-green-50 hover:bg-green-100 rounded-lg transition">
+              <i class="fas fa-heartbeat text-green-600 text-xl mr-3"></i>
+              <div>
+                <p class="font-semibold text-gray-800">Health Check</p>
+                <p class="text-xs text-gray-600">Monitoreo del sistema</p>
+              </div>
+            </a>
+            <a href="openapi.yaml" download class="flex items-center p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+              <i class="fas fa-download text-gray-600 text-xl mr-3"></i>
+              <div>
+                <p class="font-semibold text-gray-800">Descargar OpenAPI</p>
+                <p class="text-xs text-gray-600">Archivo YAML</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="mt-6 bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
+          <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+            <div class="text-sm text-gray-700">
+              <p class="font-semibold mb-1">Probando la API</p>
+              <p>Puedes probar los endpoints directamente desde esta documentación usando el botón "Try it out" en cada operación.
+              Asegúrate de configurar el servidor correcto en el selector de arriba.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Swagger UI Container -->
+    <div id="swagger-container">
+      <div id="swagger-ui"></div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-6 mt-12">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2024 Sistema de Agendamiento Médico. Todos los derechos reservados.</p>
+      <p class="text-sm text-gray-400 mt-2">
+        <i class="fas fa-book mr-1"></i>
+        Documentación generada con Swagger UI 5.11.0
+      </p>
+    </div>
+  </footer>
+
+  <!-- Swagger UI JavaScript -->
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"></script>
+
+  <script>
+    window.onload = function() {
+      // Initialize Swagger UI
+      const ui = SwaggerUIBundle({
+        url: "openapi.yaml",
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout",
+        defaultModelsExpandDepth: 1,
+        defaultModelExpandDepth: 1,
+        docExpansion: "list",
+        filter: true,
+        showExtensions: true,
+        showCommonExtensions: true,
+        tryItOutEnabled: true,
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        validatorUrl: null, // Disable online validator
+        // Custom configuration
+        supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+        onComplete: function() {
+          console.log('Swagger UI loaded successfully');
+
+          // Add custom styling after load
+          const swaggerContainer = document.getElementById('swagger-ui');
+          if (swaggerContainer) {
+            swaggerContainer.style.paddingTop = '20px';
+          }
+        },
+        onFailure: function(error) {
+          console.error('Failed to load Swagger UI:', error);
+
+          // Show error message
+          const container = document.getElementById('swagger-ui');
+          container.innerHTML = `
+            <div class="bg-red-100 border-l-4 border-red-600 p-6 rounded-lg">
+              <div class="flex items-start">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl mr-4"></i>
+                <div>
+                  <h3 class="text-lg font-bold text-red-800 mb-2">Error al cargar la documentación</h3>
+                  <p class="text-red-700 mb-2">No se pudo cargar el archivo OpenAPI.</p>
+                  <p class="text-sm text-red-600">
+                    <strong>Posibles causas:</strong><br>
+                    • El archivo openapi.yaml no está en la ubicación correcta<br>
+                    • Problemas de permisos CORS<br>
+                    • El archivo YAML contiene errores de sintaxis
+                  </p>
+                  <div class="mt-4">
+                    <a href="openapi.yaml" target="_blank" class="text-blue-600 hover:underline">
+                      <i class="fas fa-external-link-alt mr-1"></i>
+                      Abrir archivo OpenAPI directamente
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      window.ui = ui;
+    };
+  </script>
+</body>
+</html>
